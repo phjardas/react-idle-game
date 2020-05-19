@@ -1,0 +1,9 @@
+.producers {
+  margin-top: 1rem;
+}
+
+.producers th,
+.producers td {
+  text-align: left;
+  padding: 0.25rem 0.5rem;
+}
