@@ -1,6 +1,6 @@
-import React, { useReducer, useCallback, useRef, useEffect } from 'react';
 import Bignumber from 'bignumber.js';
-import classes from './Game.module.css';
+import { useCallback, useReducer } from 'react';
+import { useInterval } from './timers';
 
 const producerTypes = {
   worker: {
@@ -69,80 +69,20 @@ const initialState = {
   producers: {},
 };
 
-export default function Game() {
-  const { state, purchaseProducer } = useGame();
-
-  return (
-    <>
-      <div>
-        Money: {state.money.toFixed(0)} ({state.moneyPerSecond.toFixed(0)}/s)
-      </div>
-      <table className={classes.producers}>
-        <thead>
-          <tr>
-            <th>Type</th>
-            <th>Level</th>
-            <th>Production</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {Object.keys(producerTypes).map((type) => {
-            const producerType = producerTypes[type];
-            const producer = state.producers[type];
-            const price = producer ? producer.price : producerType.basePrice;
-
-            return (
-              <tr key={type}>
-                <th>{producerType.label}</th>
-                <td>{producer && producer.level.toString()}</td>
-                <td>{producer && <>{producer.production.toFixed(0)}/s</>}</td>
-                <td>
-                  <button onClick={() => purchaseProducer(type, 1)} disabled={price.isGreaterThan(state.money)}>
-                    buy 1 for {price.toFixed(0)}
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </>
-  );
-}
-
-function useGame() {
+export function useGame() {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const tick = useCallback((time) => {
     dispatch({ type: 'tick', time });
   }, []);
 
-  useAnimationFrame(tick);
+  useInterval(tick, 100);
 
   const purchaseProducer = useCallback((producer, count) => dispatch({ type: 'purchase-producer', producer, count }), []);
 
   return {
     state,
+    producerTypes,
     purchaseProducer,
   };
-}
-
-function useAnimationFrame(callback) {
-  const handle = useRef();
-
-  const tick = useCallback(
-    (time) => {
-      callback(time);
-      handle.current = window.requestAnimationFrame(tick);
-    },
-    [callback]
-  );
-
-  useEffect(() => {
-    handle.current = window.requestAnimationFrame(tick);
-    return () => {
-      handle.current && window.cancelAnimationFrame(handle.current);
-    };
-  }, [tick]);
 }
