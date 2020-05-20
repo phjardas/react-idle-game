@@ -1,22 +1,26 @@
 import React from 'react';
-import classes from './App.module.css';
 import { useGame } from './Game';
+import './index.css';
 import N from './N';
 
 export default function App() {
-  const { state, producerTypes, purchaseProducer } = useGame();
+  const { state, producerTypes, purchaseProducer, reset } = useGame();
 
   return (
-    <>
+    <div className="wrapper">
+      <h1>React Idle Game</h1>
       <div>
         Energy: <N value={state.energy} round /> (+
         <N value={state.energyPerSecond} />
         /s)
+        <button className="reset" onClick={reset}>
+          RESET GAME
+        </button>
       </div>
-      <table className={classes.producers}>
+      <table className="producers">
         <thead>
           <tr>
-            <th>Type</th>
+            <th>Producer</th>
             <th>Count</th>
             <th>Production</th>
             <th></th>
@@ -68,6 +72,15 @@ export default function App() {
             })}
         </tbody>
       </table>
-    </>
+
+      <p>
+        This is a little incremental game implemented in vanilla React. It's just an experiment and probably not much fun. It certainly doesn't come with the
+        depth you would normally expect from incremental games. In case you wonder: there's nothing more to see once you reach Kappa.
+      </p>
+      <p>
+        The source code is <a href="https://github.com/phjardas/react-idle-game">hosted on GitHub</a>.
+      </p>
+      <p>Written in 2020 by Philipp Jardas</p>
+    </div>
   );
 }

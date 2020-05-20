@@ -1,56 +1,89 @@
 import Bignumber from 'bignumber.js';
-import { useCallback, useReducer } from 'react';
+import { useCallback, useReducer, useEffect } from 'react';
 import { useInterval } from './timers';
+
+const initialState = {
+  energy: Bignumber(10),
+  energyPerSecond: Bignumber(0),
+  producers: {},
+};
+
+const localStorageKey = 'incremental:game';
 
 const producerTypes = {
   alpha: {
     label: 'Alpha',
-    basePrice: Bignumber(10),
+    basePrice: Bignumber(1e1),
     priceIncreaseFactor: Bignumber(12).dividedBy(10),
     productionType: 'energy',
     productionRate: Bignumber(1),
   },
   beta: {
     label: 'Beta',
-    basePrice: Bignumber(100),
+    basePrice: Bignumber(1e2),
     priceIncreaseFactor: Bignumber(12).dividedBy(10),
     productionType: 'alpha',
     productionRate: Bignumber(1),
   },
   gamma: {
     label: 'Gamma',
-    basePrice: Bignumber(10000),
+    basePrice: Bignumber(1e4),
     priceIncreaseFactor: Bignumber(12).dividedBy(10),
     productionType: 'beta',
     productionRate: Bignumber(1),
   },
   delta: {
     label: 'Delta',
-    basePrice: Bignumber(1000000),
+    basePrice: Bignumber(1e6),
     priceIncreaseFactor: Bignumber(12).dividedBy(10),
     productionType: 'gamma',
     productionRate: Bignumber(1),
   },
   epsilon: {
     label: 'Epsilon',
-    basePrice: Bignumber(10000000),
+    basePrice: Bignumber(1e8),
     priceIncreaseFactor: Bignumber(12).dividedBy(10),
     productionType: 'delta',
     productionRate: Bignumber(1),
   },
   zeta: {
     label: 'Zeta',
-    basePrice: Bignumber(1000000),
+    basePrice: Bignumber(1e10),
     priceIncreaseFactor: Bignumber(12).dividedBy(10),
     productionType: 'epsilon',
     productionRate: Bignumber(1),
   },
+  eta: {
+    label: 'Eta',
+    basePrice: Bignumber(1e12),
+    priceIncreaseFactor: Bignumber(12).dividedBy(10),
+    productionType: 'zeta',
+    productionRate: Bignumber(1),
+  },
+  iota: {
+    label: 'Iota',
+    basePrice: Bignumber(1e14),
+    priceIncreaseFactor: Bignumber(12).dividedBy(10),
+    productionType: 'eta',
+    productionRate: Bignumber(1),
+  },
+  kappa: {
+    label: 'Kappa',
+    basePrice: Bignumber(1e16),
+    priceIncreaseFactor: Bignumber(12).dividedBy(10),
+    productionType: 'iota',
+    productionRate: Bignumber(1),
+  },
 };
 
-const producerTypeOrder = ['zeta', 'epsilon', 'delta', 'gamma', 'beta', 'alpha'];
+const producerTypeOrder = ['kappa', 'iota', 'eta', 'zeta', 'epsilon', 'delta', 'gamma', 'beta', 'alpha'];
 
 function reducer(state, action) {
   switch (action.type) {
+    case 'reset': {
+      return initialState;
+    }
+
     case 'tick': {
       if (!state.lastTick) return { ...state, lastTick: action.time };
 
@@ -122,14 +155,38 @@ function reducer(state, action) {
   }
 }
 
-const initialState = {
-  energy: Bignumber(10),
-  energyPerSecond: Bignumber(0),
-  producers: {},
-};
+const storedState = (() => {
+  const stored = window.localStorage.getItem(localStorageKey);
+  if (stored) {
+    const game = JSON.parse(stored);
+    return {
+      energy: Bignumber(game.energy),
+      energyPerSecond: Bignumber(game.energyPerSecond),
+      lastTick: game.lastTick,
+      producers: Object.entries(game.producers).reduce(
+        (a, [k, p]) => ({
+          ...a,
+          [k]: {
+            count: Bignumber(p.count),
+            countFraction: Bignumber(p.countFraction),
+            increaseRate: Bignumber(p.increaseRate),
+            price: Bignumber(p.price),
+            productionRate: Bignumber(p.productionRate),
+            productionType: p.productionType,
+          },
+        }),
+        {}
+      ),
+    };
+  }
+  return initialState;
+})();
 
 export function useGame() {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(reducer, storedState);
+
+  // FIXME do not persist on EVERY update but rather once per second or so
+  useEffect(() => localStorage.setItem(localStorageKey, JSON.stringify(state)), [state]);
 
   const tick = useCallback((time) => {
     dispatch({ type: 'tick', time });
@@ -138,10 +195,12 @@ export function useGame() {
   useInterval(tick, 100);
 
   const purchaseProducer = useCallback((producer, count) => dispatch({ type: 'purchase-producer', producer, count }), []);
+  const reset = useCallback(() => dispatch({ type: 'reset' }), []);
 
   return {
     state,
     producerTypes,
     purchaseProducer,
+    reset,
   };
 }

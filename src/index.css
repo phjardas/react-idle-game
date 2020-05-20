@@ -1,0 +1,43 @@
+body {
+  font-family: sans-serif;
+  line-height: 1.3;
+}
+
+.wrapper {
+  margin: 0 auto;
+  max-width: 600px;
+}
+
+.reset {
+  margin-left: 1rem;
+  color: red;
+}
+
+.producers {
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.producers th,
+.producers td {
+  text-align: left;
+  padding: 0.25rem 0.5rem;
+}
+
+.producers th:first-child,
+.producers td:first-child {
+  padding-left: 0;
+}
+
+.producers th:last-child,
+.producers td:last-child {
+  padding-right: 0;
+}
+
+.producers thead th {
+  border-bottom: 1px solid #ccc;
+}
+
+.producers button {
+  width: 100%;
+}
