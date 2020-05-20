@@ -1,5 +1,6 @@
 import React from 'react';
-import { useGame } from './Game';
+import Button from './Button';
+import { useGame, multiPriceFactor } from './Game';
 import './index.css';
 import N from './N';
 
@@ -13,9 +14,9 @@ export default function App() {
         Energy: <N value={state.energy} round /> (+
         <N value={state.energyPerSecond} />
         /s)
-        <button className="reset" onClick={reset}>
+        <Button className="reset" onClick={reset}>
           RESET GAME
-        </button>
+        </Button>
       </div>
       <table className="producers">
         <thead>
@@ -36,6 +37,8 @@ export default function App() {
               const producerType = producerTypes[type];
               const producer = state.producers[type];
               const price = producer ? producer.price : producerType.basePrice;
+              const price5 = multiPriceFactor(producerType.priceIncreaseFactor, 5).times(price);
+              const price10 = multiPriceFactor(producerType.priceIncreaseFactor, 10).times(price);
 
               return (
                 <tr key={type}>
@@ -63,9 +66,24 @@ export default function App() {
                     )}
                   </td>
                   <td>
-                    <button onClick={() => purchaseProducer(type, 1)} disabled={price.isGreaterThan(state.energy)}>
-                      buy 1 for <N value={price} round />
-                    </button>
+                    <div className="producer-buttons">
+                      <Button onClick={() => purchaseProducer(type, 1)} disabled={price.isGreaterThan(state.energy)} progress={state.energy.dividedBy(price)}>
+                        <span className="count">+1</span>
+                        <N value={price} round className="price" />
+                      </Button>
+                      <Button onClick={() => purchaseProducer(type, 5)} disabled={price5.isGreaterThan(state.energy)} progress={state.energy.dividedBy(price5)}>
+                        <span className="count">+5</span>
+                        <N value={price5} round className="price" />
+                      </Button>
+                      <Button
+                        onClick={() => purchaseProducer(type, 10)}
+                        disabled={price10.isGreaterThan(state.energy)}
+                        progress={state.energy.dividedBy(price10)}
+                      >
+                        <span className="count">+10</span>
+                        <N value={price10} round className="price" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               );

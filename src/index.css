@@ -38,6 +38,45 @@ body {
   border-bottom: 1px solid #ccc;
 }
 
-.producers button {
+.producer-buttons {
+  display: flex;
+  justify-content: stretch;
+}
+.producer-buttons button {
+  border-style: solid;
+  border-width: 1px;
+  border-right-style: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 1rem;
+  padding: 0.25rem 0.5rem;
   width: 100%;
+}
+.producer-buttons button:first-child {
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
+.producer-buttons button:last-child {
+  border-right-style: solid;
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+.producer-buttons button * {
+  z-index: 2;
+}
+.producer-buttons .price {
+  font-size: 0.8rem;
+}
+
+.with-progress {
+  position: relative;
+}
+.with-progress .progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background: #eef;
+  z-index: 1;
 }

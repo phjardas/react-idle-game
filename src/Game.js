@@ -78,6 +78,14 @@ const producerTypes = {
 
 const producerTypeOrder = ['kappa', 'iota', 'eta', 'zeta', 'epsilon', 'delta', 'gamma', 'beta', 'alpha'];
 
+export function multiPriceFactor(priceIncreaseFactor, count) {
+  let factor = Bignumber(1);
+  for (let i = 1; i < count; i++) {
+    factor = factor.plus(priceIncreaseFactor.pow(i));
+  }
+  return factor;
+}
+
 function reducer(state, action) {
   switch (action.type) {
     case 'reset': {
@@ -119,10 +127,11 @@ function reducer(state, action) {
       };
     }
     case 'purchase-producer': {
+      const count = Bignumber(action.count || 1);
       const producerType = producerTypes[action.producer];
       const currentProducer = state.producers[action.producer];
-      const price = currentProducer ? currentProducer.price : producerType.basePrice;
-      const nextCount = currentProducer ? currentProducer.count.plus(Bignumber(1)) : Bignumber(1);
+      const price = multiPriceFactor(producerType.priceIncreaseFactor, count).times(currentProducer ? currentProducer.price : producerType.basePrice);
+      const nextCount = currentProducer ? currentProducer.count.plus(count) : count;
       const productionType = producerType.productionType;
 
       const producers = {
